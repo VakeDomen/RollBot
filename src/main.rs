@@ -160,8 +160,8 @@ async fn main() {
             use rand::Rng;
 
             // Define your minimum and maximum interval (in seconds)
-            let min_interval = 30;
-            let max_interval = 90;
+            let min_interval = 2700;
+            let max_interval = 18000;
 
             loop {
                 // Choose a random delay between min_interval and max_interval (inclusive)
