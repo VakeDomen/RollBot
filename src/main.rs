@@ -87,9 +87,9 @@ async fn main() {
             loop {
                 let now = Local::now();
                 let current_year = now.year();
-                let feb15 = Local.ymd(current_year, 2, 15)
+                let feb15 = Local.ymd(current_year, 4, 5)
                     .and_hms(0, 0, 0);
-                let feb16 = Local.ymd(current_year, 2, 16)
+                let feb16 = Local.ymd(current_year, 4, 6)
                     .and_hms(0, 0, 0);
                 if now < feb15 {
                     let delay = (feb15 - now).to_std().unwrap();
@@ -133,6 +133,12 @@ async fn main() {
                     .expect("Names list is empty")
                     .to_string();
                 state.hourly_count.fetch_add(1, Ordering::Relaxed);
+                {
+                    let mut counts_ref = counts.lock().unwrap();
+                    let count = counts_ref.get_mut(&chosen_name).map_or(&0, |v| v);
+                    let new_count = *count + 1;
+                    counts_ref.insert(chosen_name.clone(), new_count);
+                }
                 let chats = {
                     let chats_lock = state.chats.lock().unwrap();
                     chats_lock.clone()
