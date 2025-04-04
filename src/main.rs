@@ -127,6 +127,8 @@ async fn main() {
                     log::info!("Allowed window ended (Feb 16 00:00), stopping ticker.");
                     break;
                 }
+
+                // name 1
                 ticker.tick().await;
                 let chosen_name = names
                     .choose(&mut thread_rng())
@@ -144,7 +146,29 @@ async fn main() {
                     chats_lock.clone()
                 };
                 for chat_id in chats {
-                    if let Err(err) = bot.send_message(chat_id, chosen_name.clone()).await {
+                    if let Err(err) = bot.send_message(chat_id, format!("Bojevnik 1: {}", chosen_name.clone())).await {
+                        log::error!("Error sending hourly message to chat {}: {:?}", chat_id, err);
+                    }
+                }
+
+                // name 1
+                let chosen_name = names
+                    .choose(&mut thread_rng())
+                    .expect("Names list is empty")
+                    .to_string();
+                state.hourly_count.fetch_add(1, Ordering::Relaxed);
+                {
+                    let mut counts_ref = counts.lock().unwrap();
+                    let count = counts_ref.get_mut(&chosen_name).map_or(&0, |v| v);
+                    let new_count = *count + 1;
+                    counts_ref.insert(chosen_name.clone(), new_count);
+                }
+                let chats = {
+                    let chats_lock = state.chats.lock().unwrap();
+                    chats_lock.clone()
+                };
+                for chat_id in chats {
+                    if let Err(err) = bot.send_message(chat_id, format!("Bojevnik 2: {}", chosen_name.clone())).await {
                         log::error!("Error sending hourly message to chat {}: {:?}", chat_id, err);
                     }
                 }
@@ -258,7 +282,21 @@ async fn main() {
                                     let new_count = *count + 1;
                                     counts_ref.insert(chosen_name.clone(), new_count);
                                 }
-                                bot.send_message(msg.chat.id, chosen_name)
+                                bot.send_message(msg.chat.id, format!("Bojevnik 1: {}", chosen_name))
+                                    .await?;
+
+                                let chosen_name = names
+                                    .choose(&mut thread_rng())
+                                    .expect("Names list is empty")
+                                    .to_string();
+                                state.roll_count.fetch_add(1, Ordering::Relaxed);
+                                {
+                                    let mut counts_ref = counts.lock().unwrap();
+                                    let count = counts_ref.get_mut(&chosen_name).map_or(&0, |v| v);
+                                    let new_count = *count + 1;
+                                    counts_ref.insert(chosen_name.clone(), new_count);
+                                }
+                                bot.send_message(msg.chat.id, format!("Bojevnik 2: {}", chosen_name))
                                     .await?;
                             }
                             Command::Pukaz => {
